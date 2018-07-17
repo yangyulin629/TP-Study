@@ -1,0 +1,56 @@
+version: '2'
+
+services:
+
+### Applications Code Container #############################
+
+    applications:
+      image: tianon/true
+      volumes:
+        - ./src:/var/www
+
+### NGINX Server Container ##################################
+
+    nginx:
+      build:
+        context: ./nginx
+      restart: always
+      volumes_from:
+        - applications
+      volumes:
+        - ./logs/nginx:/var/log/nginx
+        - ./nginx/sites:/etc/nginx/sites-available
+        - ./nginx/conf.d:/etc/nginx/conf.d
+      ports:
+        - "8072:72"
+      depends_on:
+        - fpm72
+      networks:
+        - frontend
+        - backend
+
+### PHP-FPM Container #######################################
+
+    fpm72:
+      build:
+        context: ./fpm
+        dockerfile: "./72/Dockerfile-CentOS"
+      restart: always
+      volumes_from:
+        - applications
+      volumes:
+        - ./fpm/72/php.ini:/usr/local/lib/php.ini
+        - ./fpm/72/php-fpm.conf:/usr/local/etc/php-fpm.conf
+        - ./fpm/72/php-fpm.d:/usr/local/etc/php-fpm.d
+      tty: true
+      ports:
+        - "9000:9000"
+      networks:
+        - backend
+
+networks:
+  frontend:
+    driver: "bridge"
+  backend:
+    driver: "bridge"
+

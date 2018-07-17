@@ -1,0 +1,50 @@
+FROM centos:7
+
+MAINTAINER David Yang <yangyulin629@163.com>
+
+RUN (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ $i == \
+systemd-tmpfiles-setup.service ] || rm -f $i; done); \
+rm -f /lib/systemd/system/multi-user.target.wants/*;\
+rm -f /etc/systemd/system/*.wants/*;\
+rm -f /lib/systemd/system/local-fs.target.wants/*; \
+rm -f /lib/systemd/system/sockets.target.wants/*udev*; \
+rm -f /lib/systemd/system/sockets.target.wants/*initctl*; \
+rm -f /lib/systemd/system/basic.target.wants/*;\
+rm -f /lib/systemd/system/anaconda.target.wants/*;
+VOLUME [ "/sys/fs/cgroup" ]
+
+RUN yum -y install gcc libxml2-devel wget autoconf make
+
+RUN wget http://us2.php.net/distributions/php-7.2.4.tar.gz
+
+RUN tar -zxvf php-7.2.4.tar.gz \
+  && cd php-7.2.4 \
+  && ./configure --enable-fpm --disable-cli --disable-cgi --with-fpm-user=www-data --with-fpm-group=www-data --with-mysqli\
+  && make \
+  && make install \
+  && cd .. \
+  && rm -rf php-7.2.4 php-7.2.4.tar.gz
+
+RUN cd / \
+  && wget https://xdebug.org/files/xdebug-2.6.0.tgz \
+  && tar -zxvf xdebug-2.6.0.tgz \
+  && cd xdebug-2.6.0 \
+  && phpize \
+  && ./configure \
+  && make \
+  && make install \
+  && cd .. \
+  && rm -rf xdebug-2.6.0 xdebug-2.6.0.tgz
+
+WORKDIR /var/www
+
+COPY fpm.service /etc/systemd/system/fpm.service
+
+RUN useradd www-data \
+  && systemctl enable fpm.service
+
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+CMD ["/usr/sbin/init"]
+
+EXPOSE 9000
