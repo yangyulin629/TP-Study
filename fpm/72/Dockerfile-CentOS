@@ -13,13 +13,13 @@ rm -f /lib/systemd/system/basic.target.wants/*;\
 rm -f /lib/systemd/system/anaconda.target.wants/*;
 VOLUME [ "/sys/fs/cgroup" ]
 
-RUN yum -y install gcc libxml2-devel wget autoconf make
+RUN yum -y install gcc libxml2-devel wget autoconf make openssl-devel
 
 RUN wget http://us2.php.net/distributions/php-7.2.4.tar.gz
 
 RUN tar -zxvf php-7.2.4.tar.gz \
   && cd php-7.2.4 \
-  && ./configure --enable-fpm --disable-cli --disable-cgi --with-fpm-user=www-data --with-fpm-group=www-data --with-mysqli\
+  && ./configure --enable-fpm --with-openssl --with-fpm-user=www-data --with-fpm-group=www-data --with-mysqli\
   && make \
   && make install \
   && cd .. \
