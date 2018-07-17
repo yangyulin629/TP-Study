@@ -43,6 +43,7 @@ services:
         - ./fpm/72/php-fpm.conf:/usr/local/etc/php-fpm.conf
         - ./fpm/72/php-fpm.d:/usr/local/etc/php-fpm.d
       tty: true
+      privileged: true
       ports:
         - "9000:9000"
       networks:

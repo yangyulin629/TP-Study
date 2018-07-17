@@ -14,4 +14,4 @@ RUN rm /etc/nginx/conf.d/default.conf
 
 CMD ["nginx"]
 
-EXPOSE 56 72 73
+EXPOSE 72
